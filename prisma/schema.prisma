@@ -9,3 +9,47 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum UserRole {
+  EMPLOYEE
+  OWNER
+}
+
+enum Designations {
+  ASSOCIATE_SOFTWARE_ENGINEER
+  SOFTWARE_ENGINEER
+  QA_EXECUTIVE
+  PRODUCT_MANAGER
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  name         String
+  email        String       @unique
+  role         UserRole     @default(EMPLOYEE)
+  designation  Designations
+  project      Project[]
+  time_entries TimeEntry[]
+}
+
+model Project {
+  id             Int         @id @default(autoincrement())
+  project_name   String
+  created_at     DateTime    @default(now())
+  estimated_time DateTime
+  actual_time    DateTime
+  status         String
+  userId         Int
+  user           User        @relation(fields: [userId], references: [id])
+  time_entries   TimeEntry[]
+}
+
+model TimeEntry {
+  id         Int      @id @default(autoincrement())
+  start_time DateTime
+  end_time   DateTime
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  projectId  Int
+  project    Project  @relation(fields: [projectId], references: [id])
+}
