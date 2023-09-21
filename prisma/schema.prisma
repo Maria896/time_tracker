@@ -32,13 +32,18 @@ model User {
   time_entries TimeEntry[]
 }
 
+enum ProjectStatus {
+  COMPLETED
+  INPROGRESS
+  STOPPED
+}
 model Project {
   id             Int         @id @default(autoincrement())
   project_name   String
   created_at     DateTime    @default(now())
   estimated_time DateTime
   actual_time    DateTime
-  status         String
+  status         ProjectStatus
   userId         Int
   user           User        @relation(fields: [userId], references: [id])
   time_entries   TimeEntry[]

@@ -13,11 +13,12 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
-dbConnect()
+
 
 
 
 app.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`);
 });
+dbConnect()
 export default app;
