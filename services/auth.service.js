@@ -1,25 +1,23 @@
 import bcrypt from "bcrypt";
-import crypto from "crypto"
+import crypto from "crypto";
+import Jwt from "jsonwebtoken";
 import { transporter } from "../utils/email.js";
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 export const register = async (name, email, password) => {
-    
-  try {
   const user = await prisma.User.findUnique({
     where: {
-      email: email
-    }
+      email: email,
+    },
   });
-  console.log("after finding user")
+
   if (user && user.is_verified == true) {
     throw {
-        status:409,
-        message:"User already exists please try another email"
-
-    }
+      status: 409,
+      message: "User already exists please try another email",
+    };
   } else if (user && user.is_verified == false) {
     const deleteUser = await prisma.User.delete({
       where: {
@@ -28,40 +26,96 @@ export const register = async (name, email, password) => {
     });
   }
 
-  // Handle the 'user' object here
-} catch (error) {
-  console.error('Error:', error);
-}
-  
-//const hashedPassword = bcrypt.hashSync(password, 10);
-const verificationToken = generateVerificationToken();
-  //console.log(verificationToken)
-
+  const hashPassword = hashedPassword(password);
+  const verificationToken = generateVerificationToken();
+  // console.log(verificationToken);
+  // console.log(`Name : ${name}, Email: ${email}, Password: ${password}`);
+  const tokenExpirationTime = new Date();
+  tokenExpirationTime.setMinutes(tokenExpirationTime.getMinutes() + 15);
   const createdUser = await prisma.User.create({
     data: {
       name: name,
       email: email,
-      password: password,
-      verification_token: verificationToken
+      password: hashPassword,
+      verification_token: verificationToken,
+      designation: "PRODUCT_MANAGER",
+      token_expiration : tokenExpirationTime
     },
   });
 
-  if(!createdUser){
+  if (!createdUser) {
     throw {
-        status: 400,
-        message: "User not created",
-      };
-  }else{
-    await sendEmailVerificationLink(createdUser.email,verificationToken);
-    return{
-        status:201,
-        message: "Register successfully. Please check your email to verify your account.",
-    }
+      status: 400,
+      message: "User not created",
+    };
+  } else {
+    await sendEmailVerificationLink(createdUser.email, verificationToken);
+    return {
+      status: 201,
+      message:
+        "Register successfully. Please check your email to verify your account.",
+    };
   }
-
-  
 };
 
+export const verifyUserEmail = async (token) => {
+  const user = await prisma.User.findFirst({
+    where: {
+      verification_token: token,
+    },
+  });
+  //console.log(user);
+  if (!user && user.token_expiration < Date.now()) {
+    throw {
+      status: 404,
+      message: "Invalid link",
+    };
+  } else {
+    const verifiedUser = await prisma.User.update({
+      where: {
+        email: user.email,
+      },
+      data: {
+        is_verified: true,
+        verification_token : null
+      },
+    });
+    return {
+      status: 201,
+      message: "Your email has been verified successfully",
+    };
+  }
+};
+
+export const login = async (email, password) => {
+  const user = await prisma.User.findUnique({
+    where: {
+      email: email,
+    },
+  });
+
+  if (!user) {
+    throw {
+      status: 400,
+      message: "User not found",
+    };
+  }
+  const comparePassword = bcrypt.compareSync(password, user.password);
+
+  if (!comparePassword) {
+    throw {
+      status: 401,
+      message: "Invalid password please enter valid password",
+    };
+  }
+  const sceretKey = process.env.JWT_SECRET_Key;
+  const token = Jwt.sign({ id: user.id }, sceretKey, { expiresIn: "7d" });
+  return {
+    status: 200,
+    message: "Login successful.",
+    token: token,
+  };
+};
 // Function for hashed password
 const hashedPassword = (password) => {
   const hashedPassword = bcrypt.hashSync(password, 10);
@@ -70,25 +124,22 @@ const hashedPassword = (password) => {
 
 // Function for creating verification token
 const generateVerificationToken = () => {
-  let token;
-  crypto.randomBytes(10, function (err, buffer) {
-    token = buffer.toString("hex");
-  });
-  return token;
+  const buffer = crypto.randomBytes(20);
+  return buffer.toString("hex");
 };
 
 // Send Email Verification Link
 const sendEmailVerificationLink = async (to, token) => {
-	console.log(to, token);
-	try {
-		await transporter.sendMail({
-			from: "admin@gmail.com",
-			to: to,
-			subject: "Verify Your Account",
-			html: `<p>Please click the following link to verify your account:</p><p><a href="http://localhost:5173/email-verification/${token}">Verify Now`,
-		});
-		console.log("Email sent");
-	} catch (error) {
-		console.log("Email not sent", error);
-	}
+  console.log(to, token);
+  try {
+    await transporter.sendMail({
+      from: "admin@gmail.com",
+      to: to,
+      subject: "Verify Your Account",
+      html: `<p>Please click the following link to verify your account:</p><p><a href="http://localhost:5173/email-verification/${token}">Verify Now`,
+    });
+    console.log("Email sent");
+  } catch (error) {
+    console.log("Email not sent", error);
+  }
 };
