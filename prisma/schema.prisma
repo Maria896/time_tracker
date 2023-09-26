@@ -8,17 +8,29 @@ datasource db {
 }
 
 model User {
-  id                 Int          @id @default(autoincrement())
+  id                 Int           @id @default(autoincrement())
   name               String
-  email              String       @unique
+  email              String        @unique
   password           String
-  role               UserRole     @default(EMPLOYEE)
+  role               UserRole      @default(EMPLOYEE)
   designation        Designations?
-  is_verified        Boolean      @default(false)
+  is_verified        Boolean       @default(false)
   verification_token String?
-  token_expiration   DateTime? 
-  project            Project[]
+  token_expiration   DateTime?
   time_entries       TimeEntry[]
+  organization_id    Int
+  organization       Organization  @relation(fields: [organization_id], references: [id])
+  projects        UserProject[]
+}
+
+model Organization {
+  id                Int      @id @default(autoincrement())
+  organization_name String
+  email             String   @unique
+  industry_type     INDUSTRY
+  company_strength  String
+  employees         User[]
+  created_at        DateTime @default(now())
 }
 
 model Project {
@@ -29,8 +41,18 @@ model Project {
   actual_time    DateTime
   userId         Int
   status         ProjectStatus
-  user           User          @relation(fields: [userId], references: [id])
   time_entries   TimeEntry[]
+  users    UserProject[]
+}
+
+model UserProject {
+  userId    Int
+  projectId Int
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@id([userId, projectId])
 }
 
 model TimeEntry {
@@ -59,4 +81,19 @@ enum ProjectStatus {
   COMPLETED
   INPROGRESS
   STOPPED
+}
+
+enum INDUSTRY {
+  MANUFACTURING
+  SERVICE
+  TECHNOLOGY
+  HEALTHCARE
+  FINANCIAL
+  RETAIL
+  ENERGY
+  AGRICULTURE
+  TRANSPORTATION
+  ENTERTAINMENT
+  CONSTRUCTION
+  EDUCATION
 }
