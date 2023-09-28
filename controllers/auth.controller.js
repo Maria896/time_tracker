@@ -1,4 +1,4 @@
-import { login, register, verifyUserEmail } from "../services/auth.service.js";
+import { createOrganization, joinAsATeamMember, login, register, verifyUserEmail } from "../services/auth.service.js";
 import { userSchema } from "../validation/userSchema.js";
 
 // Path     :   /api/auth/signup
@@ -51,15 +51,15 @@ export const verifyEmail = async (req, res) => {
 export const loginUser = async (req, res) => {
   const { email, password, token } = req.body;
   try {
-    const { error, value } = userSchema.validate(
-      { email, password },
-      { abortEarly: false }
-    );
+    // const { error, value } = userSchema.validate(
+    //   { email, password },
+    //   { abortEarly: false }
+    // );
 
-    if (error) {
-      const errorMessage = error.details.map((detail) => detail.message);
-      return res.status(400).json({ success: false, error: errorMessage });
-    }
+    // if (error) {
+    //   const errorMessage = error.details.map((detail) => detail.message);
+    //   return res.status(400).json({ success: false, error: errorMessage });
+    // }
     const { status, message, token } = await login(email, password);
     res.send({
       status: status,
@@ -68,5 +68,40 @@ export const loginUser = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+// Path     :   /api/auth/ask-for-invitation
+// Method   :   Get
+// Access   :   Private
+// Desc     :   Send Email for membership
+export const joinAsTeamMember = async(req,res)=>{
+  try {
+    const {role} = req.body;
+    const {email} = req.user;
+    const { status, message } = await joinAsATeamMember(email);
+    res.send({
+      status: status,
+      message: message,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+// Path     :   /api/auth/create-organization
+// Method   :   Post
+// Access   :   Private
+// Desc     :   Create new organization
+export const createNewOrganization = async (req, res) => {
+  try {
+    const { role,organization_name,industry_type,company_strength } = req.body;
+    const ownerEmail = req.userEmail;
+    const { status, message } = await createOrganization(role,organization_name,industry_type,company_strength,ownerEmail);
+    console.log(status)
+    res.send({
+      status: status,
+      message: message,
+    });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
   }
 };

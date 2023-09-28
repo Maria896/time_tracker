@@ -56,7 +56,10 @@ export const register = async (name, email, password) => {
         "Register successfully. Please check your email to verify your account.",
     };
   }
-};
+
+  
+}
+
 
 export const verifyUserEmail = async (token) => {
   const user = await prisma.User.findFirst({
@@ -116,6 +119,65 @@ export const login = async (email, password) => {
     token: token,
   };
 };
+ 
+export const joinAsATeamMember = async (organizationEmail,userEmail) => {
+  // if(role === "EMPLOYEE"){
+  //   const employee = await prisma.User.update({
+  //     where: {
+  //       email: userEmail,
+  //     },
+  //     data: {
+  //       role:role
+  //     },
+  // })
+  const findOrganization = await prisma.User.findUnique({
+    where:{
+      email:organizationEmail
+    }
+  })
+  
+  if(!findOrganization){
+    throw {
+      status: 401,
+      message: "Organization not found please enter valid email",
+    };
+  }else{
+    await sendEMailForInvitation(userEmail);
+    return {
+      status: 201,
+      message:
+        "Email sent please wait for confrimation",
+    };
+  }
+
+}
+
+export const createOrganization = async(role,organizationName,industryType,companyStrength,userEmail)=>{
+  if(role === "OWNER"){
+  //   const owner = await prisma.User.update({
+  //     where: {
+  //       email: userEmail,
+  //     },
+  //     data: {
+  //       role:role
+  //     },
+  // })
+  const createdOrganization = await prisma.Organization.create({
+    data: {
+      organization_name:organizationName,
+      owner:userEmail,
+      industry_type:industryType,
+      company_strength : companyStrength,
+    }
+  })
+  console.log(createOrganization)
+  return {
+    status: 201,
+    message:"Organization created",
+  };
+  }
+}
+
 // Function for hashed password
 const hashedPassword = (password) => {
   const hashedPassword = bcrypt.hashSync(password, 10);
@@ -139,6 +201,21 @@ const sendEmailVerificationLink = async (to, token) => {
       html: `<p>Please click the following link to verify your account:</p><p><a href="http://localhost:5173/email-verification/${token}">Verify Now`,
     });
     console.log("Email sent");
+  } catch (error) {
+    console.log("Email not sent", error);
+  }
+};
+
+const sendEMailForInvitation = async (to) => {
+
+  try {
+    await transporter.sendMail({
+      from: "admin@gmail.com",
+      to: to,
+      subject: "Request for Membership",
+      html: `<p>Sending request to join your organization</p>`,
+    });
+    console.log("Sent Email for invitation");
   } catch (error) {
     console.log("Email not sent", error);
   }

@@ -12,24 +12,24 @@ model User {
   name               String
   email              String        @unique
   password           String
-  role               UserRole      @default(EMPLOYEE)
+  role               UserRole?      @default(EMPLOYEE)
   designation        Designations?
   is_verified        Boolean       @default(false)
   verification_token String?
   token_expiration   DateTime?
   time_entries       TimeEntry[]
-  organization_id    Int
-  organization       Organization  @relation(fields: [organization_id], references: [id])
-  projects        UserProject[]
+  organization_id    Int?
+  organization        Organization? @relation("users", fields: [organization_id], references: [id])
+  projects           UserProject[]
 }
 
 model Organization {
   id                Int      @id @default(autoincrement())
   organization_name String
-  email             String   @unique
+  owner             String   @unique
   industry_type     INDUSTRY
-  company_strength  String
-  employees         User[]
+  company_strength  Int
+  employees         User[] @relation("users")
   created_at        DateTime @default(now())
 }
 
@@ -42,7 +42,7 @@ model Project {
   userId         Int
   status         ProjectStatus
   time_entries   TimeEntry[]
-  users    UserProject[]
+  users          UserProject[]
 }
 
 model UserProject {
