@@ -120,16 +120,22 @@ export const login = async (email, password) => {
   };
 };
  
-export const joinAsATeamMember = async (organizationEmail,userEmail) => {
-  // if(role === "EMPLOYEE"){
-  //   const employee = await prisma.User.update({
-  //     where: {
-  //       email: userEmail,
-  //     },
-  //     data: {
-  //       role:role
-  //     },
-  // })
+export const joinAsATeamMember = async (organizationEmail,userId) => {
+  if(role === "EMPLOYEE"){
+    const employee = await prisma.User.update({
+      where: {
+        email: userEmail,
+      },
+      data: {
+        role:role
+      },
+  })
+  }
+  const user = await prisma.User.findFirst({
+    where: {
+      id: userId,
+    }
+  })
   const findOrganization = await prisma.User.findUnique({
     where:{
       email:organizationEmail
@@ -142,7 +148,7 @@ export const joinAsATeamMember = async (organizationEmail,userEmail) => {
       message: "Organization not found please enter valid email",
     };
   }else{
-    await sendEMailForInvitation(userEmail);
+    await sendEMailForInvitation(findOrganization.email);
     return {
       status: 201,
       message:
@@ -152,30 +158,49 @@ export const joinAsATeamMember = async (organizationEmail,userEmail) => {
 
 }
 
-export const createOrganization = async(role,organizationName,industryType,companyStrength,userEmail)=>{
-  if(role === "OWNER"){
-  //   const owner = await prisma.User.update({
-  //     where: {
-  //       email: userEmail,
-  //     },
-  //     data: {
-  //       role:role
-  //     },
-  // })
+export const createOrganization = async(role,organizationName,industryType,companyStrength,userId)=>{
+  const user = await prisma.User.findFirst({
+    where: {
+      id: userId,
+    }
+  })
+  const organization = await prisma.Organization.findFirst({
+    where:{
+      owner:user.email
+    }
+  })
+  if(!user && role === "OWNER"){
+    const owner = await prisma.User.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        role:"OWNER"
+      },
+  })
   const createdOrganization = await prisma.Organization.create({
     data: {
       organization_name:organizationName,
-      owner:userEmail,
+      owner:owner.email,
       industry_type:industryType,
       company_strength : companyStrength,
     }
   })
-  console.log(createOrganization)
+  // console.log(createdOrganization)
   return {
     status: 201,
     message:"Organization created",
   };
-  }
+  
+}else{
+  throw {
+    status: 401,
+    message: "Already exist",
+  };
+}
+  
+  
+  
 }
 
 // Function for hashed password

@@ -12,7 +12,7 @@ model User {
   name               String
   email              String        @unique
   password           String
-  role               UserRole?      @default(EMPLOYEE)
+  role               UserRole?   
   designation        Designations?
   is_verified        Boolean       @default(false)
   verification_token String?

@@ -76,8 +76,7 @@ export const loginUser = async (req, res) => {
 // Desc     :   Send Email for membership
 export const joinAsTeamMember = async(req,res)=>{
   try {
-    const {role} = req.body;
-    const {email} = req.user;
+    const {email,role} = req.body;
     const { status, message } = await joinAsATeamMember(email);
     res.send({
       status: status,
@@ -88,14 +87,14 @@ export const joinAsTeamMember = async(req,res)=>{
   }
 }
 // Path     :   /api/auth/create-organization
-// Method   :   Post
+// Method   :   Put
 // Access   :   Private
 // Desc     :   Create new organization
 export const createNewOrganization = async (req, res) => {
   try {
     const { role,organization_name,industry_type,company_strength } = req.body;
-    const ownerEmail = req.userEmail;
-    const { status, message } = await createOrganization(role,organization_name,industry_type,company_strength,ownerEmail);
+    const userId = req.userId
+    const { status, message } = await createOrganization(role,organization_name,industry_type,company_strength,userId);
     console.log(status)
     res.send({
       status: status,
