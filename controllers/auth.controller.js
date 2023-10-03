@@ -77,7 +77,7 @@ export const loginUser = async (req, res) => {
 export const joinAsTeamMember = async(req,res)=>{
   try {
     const {email,role} = req.body;
-    const { status, message } = await joinAsATeamMember(email);
+    const { status, message } = await joinAsATeamMember(role,email);
     res.send({
       status: status,
       message: message,

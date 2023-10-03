@@ -120,22 +120,18 @@ export const login = async (email, password) => {
   };
 };
  
-export const joinAsATeamMember = async (organizationEmail,userId) => {
+export const joinAsATeamMember = async (role,organizationEmail,userId) => {
   if(role === "EMPLOYEE"){
     const employee = await prisma.User.update({
       where: {
-        email: userEmail,
+        id: userId,
       },
       data: {
         role:role
       },
   })
   }
-  const user = await prisma.User.findFirst({
-    where: {
-      id: userId,
-    }
-  })
+  
   const findOrganization = await prisma.User.findUnique({
     where:{
       email:organizationEmail
@@ -169,7 +165,7 @@ export const createOrganization = async(role,organizationName,industryType,compa
       owner:user.email
     }
   })
-  if(!user && role === "OWNER"){
+  if(!organization && role === "OWNER"){
     const owner = await prisma.User.update({
       where: {
         id: userId,
