@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import {dbConnect} from "./config/db.js"
 import authRoutes from "./routes/auth.routes.js"
+import projectRoutes from "./routes/project.routes.js"
+
 
 dotenv.config();
 
@@ -15,6 +17,8 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/project", projectRoutes);
+
 
 
 

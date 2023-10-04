@@ -8,28 +8,31 @@ datasource db {
 }
 
 model User {
-  id                 Int           @id @default(autoincrement())
-  name               String
-  email              String        @unique
-  password           String
-  role               UserRole?   
-  designation        Designations?
-  is_verified        Boolean       @default(false)
-  verification_token String?
-  token_expiration   DateTime?
-  time_entries       TimeEntry[]
-  organization_id    Int?
-  organization        Organization? @relation("users", fields: [organization_id], references: [id])
-  projects           UserProject[]
+  id                   Int           @id @default(autoincrement())
+  name                 String
+  email                String        @unique
+  password             String
+  role                 UserRole?
+  designation          Designations?
+  is_verified          Boolean       @default(false)
+  verification_token   String?
+  token_expiration     DateTime?
+  created_projects     Project[]
+  time_entries         TimeEntry[]
+  assigned_projects    UserProject[]
+  created_organization Organization? @relation("createdBy")
+  employees   User? @relation("organizationEmployees",fields: [employeeId], references: [id])
+  employeeId Int
 }
 
 model Organization {
   id                Int      @id @default(autoincrement())
   organization_name String
-  owner             String   @unique
+  ownerId           Int  @unique    
+  owner             User     @relation("createdBy",fields: [ownerId], references: [id])
   industry_type     INDUSTRY
   company_strength  Int
-  employees         User[] @relation("users")
+  employees         User[]  @relation("organizationEmployees")
   created_at        DateTime @default(now())
 }
 
@@ -37,10 +40,11 @@ model Project {
   id             Int           @id @default(autoincrement())
   project_name   String
   created_at     DateTime      @default(now())
-  estimated_time DateTime
-  actual_time    DateTime
-  userId         Int
-  status         ProjectStatus
+  estimated_time DateTime?
+  actual_time    DateTime?
+  status         ProjectStatus @default(INPROGRESS)
+  creatorId      Int
+  user           User          @relation(fields: [creatorId], references: [id])
   time_entries   TimeEntry[]
   users          UserProject[]
 }
