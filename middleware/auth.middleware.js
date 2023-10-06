@@ -1,19 +1,31 @@
 import JWT from "jsonwebtoken"
+import { PrismaClient } from "@prisma/client";
 
-export const authHandler = (req, res, next) => {
-    try {
-     let token = req.headers.authorization;
-     if (token) {
-         token = token.split(" ")[1];
-         let user = JWT.verify(token, process.env.JWT_SECRET_KEY);
-         req.userId = user.id;
-         //console.log(user)
-         console.log("User ID:", req.userId);
-         next();
-     } else {
-         res.status(401).json({ message: "Unauthorized User" }); res.status(401).json({ message: "Unauthorized User" });
-     }
-    } catch (error) {
-     res.status(500).json({ message: "Internal server error", error });
+const prisma = new PrismaClient();
+
+export const authHandler = async (req, res, next) => {
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer ')
+    ) {
+      try {
+        let [, token] = req.headers.authorization.split(' ');
+        let { id } = JWT.verify(token, process.env.JWT_SECRET_KEY);
+        let user = await prisma.user.findUnique({
+            where:{
+                id:id
+            }
+        });
+        req.userId = user.id
+        req.user = user;
+        next();
+      } catch (error) {
+        console.log(error);
+        res.statusCode = 401;
+        throw new Error('Unauthorized');
+      }
+    } else {
+      res.statusCode = 401;
+      throw new Error('Unauthorized');
     }
- };
+  };

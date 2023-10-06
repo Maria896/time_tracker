@@ -29,8 +29,8 @@ model User {
 model Organization {
   id                Int      @id @default(autoincrement())
   organization_name String
-  ownerId           Int      @unique
-  owner             User     @relation("ownerOf", fields: [ownerId], references: [id])
+  ownerId           Int    @unique
+  owner             User?     @relation("ownerOf", fields: [ownerId], references: [id])
   industry_type     INDUSTRY
   company_strength  Int
   employees         User[]   @relation("employeeOf")

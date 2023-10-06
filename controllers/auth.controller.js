@@ -1,4 +1,4 @@
-import { createOrganization, joinAsATeamMember, login, register, verifyUserEmail } from "../services/auth.service.js";
+import { createOrganization, inviteTeamMember, joinAsATeamMember, login, register, verifyUserEmail } from "../services/auth.service.js";
 import { userSchema } from "../validation/userSchema.js";
 
 // Path     :   /api/auth/signup
@@ -102,5 +102,40 @@ export const createNewOrganization = async (req, res) => {
     });
   } catch (error) {
     res.status(500).send({ message: error.message });
+  }
+};
+// Path     :   /api/auth/invite-new-member
+// Method   :   Put
+// Access   :   Private
+// Desc     :   Invite new team member
+export const inviteNewTeamMember = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const userId = req.userId
+    const { status, message } = await inviteTeamMember(email);
+    console.log(status)
+    res.send({
+      status: status,
+      message: message,
+    });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+// Path     :   /api/auth/accept-invitation/:token
+// Method   :   Get
+// Access   :   Private
+// Desc     :   Verify email of new user
+export const acceptInvitation = async (req, res) => {
+  try {
+    const { token } = req.params;
+    //console.log(token);
+    const { status, message } = await verifyUserEmail(token);
+    res.send({
+      status: status,
+      message: message,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
