@@ -1,4 +1,4 @@
-import { createOrganization, inviteTeamMember, joinAsATeamMember, login, register, verifyUserEmail } from "../services/auth.service.js";
+import { acceptInvitation, createOrganization, inviteTeamMember, joinAsATeamMember, login, register, verifyUserEmail } from "../services/auth.service.js";
 import { userSchema } from "../validation/userSchema.js";
 
 // Path     :   /api/auth/signup
@@ -125,12 +125,12 @@ export const inviteNewTeamMember = async (req, res) => {
 // Path     :   /api/auth/accept-invitation/:token
 // Method   :   Get
 // Access   :   Private
-// Desc     :   Verify email of new user
-export const acceptInvitation = async (req, res) => {
+// Desc     :   Accept invitation to join organization 
+export const acceptInvitationFromOwner = async (req, res) => {
   try {
     const { token } = req.params;
     //console.log(token);
-    const { status, message } = await verifyUserEmail(token);
+    const { status, message } = await acceptInvitation(token);
     res.send({
       status: status,
       message: message,

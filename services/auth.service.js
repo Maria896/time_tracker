@@ -289,7 +289,7 @@ export const acceptInvitation = async(token,ownerId)=>{
 		  verification_token: token,
 		},
 	  });
-	  const findOrganization = await prisma.organization.findUnique({
+	  const findOrganization = await prisma.organization.findFirst({
 		where:{
 			owner:{
 				id:ownerId
@@ -297,7 +297,7 @@ export const acceptInvitation = async(token,ownerId)=>{
 		}
 	  })
 	  //console.log(user);
-	  if (!user && user.token_expiration ) {
+	  if (!user ) {
 		throw {
 		  status: 404,
 		  message: "Invalid link",
@@ -310,13 +310,24 @@ export const acceptInvitation = async(token,ownerId)=>{
 		  data: {
 			is_employee: true,
 			verification_token: null,
-			employeeId : user.id,
-			employee_of: findOrganization.organization_name
+			role:"EMPLOYEE"
 		  },
 		});
+    await prisma.organization.update({
+      where:{
+        id:findOrganization.id
+      },
+      data: {
+        employees: {
+          connect: {
+            id: newEmployee.id,
+          },
+        },
+      },
+    })
 		return {
 		  status: 201,
-		  message: "Your email has been verified successfully",
+		  message: "Request accepted",
 		};
 	  }
 }
