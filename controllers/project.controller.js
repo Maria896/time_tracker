@@ -115,7 +115,7 @@ export const deleteProjectById= async (req, res) => {
   try {
     const ownerId = req.userId
     const projectId = parseInt(req.params.projectId);
-    const { status, message } = await deleteProject(ownerIdprojectId);
+    const { status, message } = await deleteProject(ownerId,projectId);
     res.send({
       status: status,
       message: message,

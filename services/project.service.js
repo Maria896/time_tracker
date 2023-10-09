@@ -142,7 +142,7 @@ export const assignProject = async(ownerId,employeeEmail,projectId)=>{
                 users:{
                     connect: [ 
                         {
-                          email: isEmployee.email, 
+                          id: isEmployee.id, 
                         },
                       ],
                 }
@@ -174,7 +174,7 @@ export const deleteProject = async(ownerId,projectId)=>{
     })
     return {
         status: 201,
-        message: "Project retrieved successfully.",
+        message: "Project Deleted successfully.",
         project
       };
 }
