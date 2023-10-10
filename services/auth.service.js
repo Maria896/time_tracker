@@ -247,7 +247,8 @@ export const inviteTeamMember = async (email) => {
     },
   });
   if (findUser) {
-    const verificationToken = generateVerificationToken();
+    if(!findUser.role === "EMPLOYEE"){
+      const verificationToken = generateVerificationToken();
     const tokenExpirationTime = new Date();
     tokenExpirationTime.setMinutes(tokenExpirationTime.getMinutes() + 15);
     try {
@@ -278,6 +279,13 @@ export const inviteTeamMember = async (email) => {
 		message: "Invitation not sent",
 	  };
     }
+    }else{
+      throw {
+        status: 401,
+        message: "Already Member of your organization",
+        };
+    }
+    
   } else {
     console.log("Redirect to registration page");
   }
