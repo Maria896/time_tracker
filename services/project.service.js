@@ -189,6 +189,50 @@ export const deleteProject = async (ownerId, projectId) => {
   };
 };
 
+export const deleteMember = async(ownerId,projectId,userId)=>{
+    
+    try {
+     
+      const existingProject = await prisma.project.findUnique({
+        where: { id: projectId,creatorId:ownerId },
+      });
+      const existingUser = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+  
+      if (!existingProject || !existingUser) {
+        throw {
+            status: 404,
+            message: "Project or user not found.",
+          };
+      }
+  
+      await prisma.userProject.deleteMany({
+        where: { projectId: projectId, userId: userId },
+      });
+      return {
+        status: 200,
+        message: "Member removed from the project successfully.",
+      };
+
+} catch (error) {
+  console.error('Error removing member from project:', error);
+}
+}
+
+export const changeStatus = async(ownerId, projectId,status)=>{
+    const project = await prisma.project.update({
+        where: { id: projectId,creatorId:ownerId },
+        data:{
+            status:status
+        }
+      });
+      return {
+        status: 200,
+        message: "Project Status changed..",
+      };
+}
+
 const sendnNotification = async (to, projectName) => {
   try {
     await transporter.sendMail({
