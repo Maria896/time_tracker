@@ -18,7 +18,7 @@ model User {
   verification_token   String?
   token_expiration     DateTime?
   created_projects     Project[]
-  time_entries         TimeEntry[]
+  time_entries         DateToTimer[]
   assigned_projects    UserProject[]
   created_organization Organization? @relation("ownerOf")
   employee_of          Organization? @relation("employeeOf", fields: [employeeId], references: [id])
@@ -46,7 +46,7 @@ model Project {
   status         ProjectStatus @default(INPROGRESS)
   creatorId      Int
   creator        User          @relation(fields: [creatorId], references: [id])
-  time_entries   TimeEntry[]
+  time_entries   DateToTimer[]
   users          UserProject[]
 }
 
@@ -60,14 +60,22 @@ model UserProject {
   @@id([userId, projectId])
 }
 
-model TimeEntry {
+model Timer {
+  id                  Int           @id @default(autoincrement())
+  start_time          DateTime
+  end_time            DateTime
+  date_toTime_entries DateToTimer[]
+}
+
+model DateToTimer {
   id         Int      @id @default(autoincrement())
-  start_time DateTime
-  end_time   DateTime
+  Date       DateTime
   userId     Int
   projectId  Int
   project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timer      Timer[]
+  total_time DateTime
 }
 
 enum UserRole {
