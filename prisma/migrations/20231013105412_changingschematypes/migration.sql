@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "DateToTimer" ALTER COLUMN "Date" SET DATA TYPE TEXT,
+ALTER COLUMN "total_time" SET DATA TYPE TEXT;
+
+-- AlterTable
+ALTER TABLE "Timer" ALTER COLUMN "start_time" SET DATA TYPE TEXT,
+ALTER COLUMN "end_time" SET DATA TYPE TEXT;

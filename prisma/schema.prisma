@@ -62,20 +62,20 @@ model UserProject {
 
 model Timer {
   id                  Int           @id @default(autoincrement())
-  start_time          DateTime
-  end_time            DateTime
+  start_time          String
+  end_time            String?
   date_toTime_entries DateToTimer[]
 }
 
 model DateToTimer {
   id         Int      @id @default(autoincrement())
-  Date       DateTime
+  Date       String
   userId     Int
   projectId  Int
   project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   timer      Timer[]
-  total_time DateTime
+  total_time String?
 }
 
 enum UserRole {

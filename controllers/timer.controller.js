@@ -7,7 +7,10 @@ export const startYourTimer = async (req, res) => {
     try {
       
       const loggedInUserId = req.user.id;
-      const {userId,projectId} = req.params
+      const userId = parseInt(req.params.userId)
+      const projectId = parseInt(req.params.projectId)
+
+      console.log(loggedInUserId,userId,projectId)
       const { status, message } = await startTimer(
         userId,projectId,loggedInUserId
       );

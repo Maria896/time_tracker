@@ -1,39 +1,30 @@
 import { PrismaClient } from "@prisma/client";
+import moment from "moment";
 
 const prisma = new PrismaClient();
 
 export const startTimer = async(userId,projectId,loggedInUserId) => {
-    // Get the current time (hours, minutes, seconds)
-    const currentDate = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    const seconds = now.getSeconds();
-    // Create a new Timer record with the current time
-    const startTime = {
-        hours,
-        minutes,
-        seconds,
-      };
+ 
+
       const findUser = await prisma.user.findUnique({
         where:{
             id:userId,
-            assigned_projects:{
-                projectId:projectId
-            }
         }
       })
+      // console.log(findUser)
       const findProject = await prisma.project.findUnique({
         where:{
             id:projectId,
-            users:{
-                userId:userId
-            }
+            // users:{
+            //     userId:userId
+            // }
         }
       })
-      if(!findProject){
+      console.log(findProject)
+      if(!findProject && findProject.status === "COMPLETED"){
         throw {
             status: 409,
-            message: "Project Not found...",
+            message: "Project Not found or project completed...",
           };
       }
       if(findUser && !userId === loggedInUserId){
@@ -44,20 +35,19 @@ export const startTimer = async(userId,projectId,loggedInUserId) => {
       }
       const timer = await prisma.timer.create({
         data: {
-          start_time: startTime,
-          end_time: null, // Initially set to null as the timer is running
+          start_time: moment().format("hh:mm"), 
           date_toTime_entries: {
             create: {
-              Date: currentDate,
-              userId,
-              projectId,
-              total_time: null, // Initially set to null as the timer is running
-            },
-          },
+              Date: moment().format('MMMM Do YYYY'), 
+              userId: userId,
+              projectId: projectId,
+              
+            }
+          }
         },
         include: {
-          date_toTime_entries: true,
-        },
+          date_toTime_entries: true
+        }
       });
       return {
         status: 201,
