@@ -240,14 +240,27 @@ const sendEMailForInvitation = async (to) => {
   }
 };
 
-export const inviteTeamMember = async (email) => {
+export const inviteTeamMember = async (email,ownerId) => {
   const findUser = await prisma.user.findUnique({
     where: {
       email: email,
     },
   });
+  
+ 
   if (findUser) {
-    if(!findUser.role === "EMPLOYEE"){
+    const findOrganization = await prisma.organization.findFirst({
+      where: {
+        ownerId: ownerId,
+        employees: {
+          some: {
+            id: findUser.id,
+          },
+        },
+      },
+    });
+    console.log(findOrganization)
+    if( !findOrganization){
       const verificationToken = generateVerificationToken();
     const tokenExpirationTime = new Date();
     tokenExpirationTime.setMinutes(tokenExpirationTime.getMinutes() + 15);

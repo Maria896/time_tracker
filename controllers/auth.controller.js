@@ -111,8 +111,8 @@ export const createNewOrganization = async (req, res) => {
 export const inviteNewTeamMember = async (req, res) => {
   try {
     const { email } = req.body;
-    const userId = req.userId
-    const { status, message } = await inviteTeamMember(email);
+    const ownerId = req.userId
+    const { status, message } = await inviteTeamMember(email,ownerId);
     console.log(status)
     res.send({
       status: status,

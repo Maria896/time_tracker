@@ -140,8 +140,9 @@ export const assignProject = async (ownerId, employeeEmail, projectId) => {
         id: projectId,
       },
     });
+    console.log(project)
     if (isEmployee) {
-      if (project.status !== "COMPLETED" || project.status !== "STOPPED") {
+      if (project.status == "INPROGRESS" ) {
         const userProject = await prisma.userProject.create({
           data: {
             userId: isEmployee.id,
@@ -150,7 +151,7 @@ export const assignProject = async (ownerId, employeeEmail, projectId) => {
         });
 
         // Send a notification
-        //   await sendnNotification(isEmployee.employee_of.owner.email, project.project_name);
+          await sendnNotification(isEmployee.employee_of.owner.email, project.project_name);
         return {
           status: 201,
           message: "Member added successfully to the project.",
